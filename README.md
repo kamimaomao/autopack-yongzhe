@@ -2,6 +2,13 @@
 
 基于 **《闯关勇者》** 原生解包美术、216 张角色中的 **`_st` 挨揍颜艺差分帧**、酒馆战棋专属图集（`TavernFight/`）、`Hud/` 彩色位图跳字及原声配乐打造的 **《Super Auto Pets（超级自动宠物）》风竖屏 5v5 排队对撞自走棋** 独立 Web 游戏。
 
+## 在线试玩地址（三端同步部署）
+
+- **花生壳（国内免密秒开）**：https://m7nfih.kicp.fun
+- **Cloudflare Workers / Pages（全球 CDN）**：https://autopack-yongzhe.kamisola19890202.workers.dev
+- **GitHub Pages**：https://kamimaomao.github.io/autopack-yongzhe/
+- **GitHub 源码仓**：https://github.com/kamimaomao/autopack-yongzhe
+
 ## 核心特色玩法
 
 1. **左 1 前锋迎头互拱 + 顺位补位**：敌我双方最左侧 **1 号位** 为黄金交锋位，开战后直接迎头猛扑对撞；前锋力竭后右侧 2~5 号位依次向左顶上。
