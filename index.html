@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#121624">
+  <link rel="icon" href="./assets/textures/角色/role/moster_2_32.png">
+  <title>猛宠斗阵 · 勇者酒馆自走棋</title>
+  <link rel="stylesheet" href="./styles.css?v=2">
+</head>
+<body>
+  <main class="app-shell" id="appShell">
+    <div class="toast-banner" id="toastBanner" role="status" aria-live="polite"></div>
+
+    <!-- 1. 顶部全局状态栏 -->
+    <header class="top-hud">
+      <div class="hud-left">
+        <button type="button" class="commander-pill" id="btnCommanderInfo" aria-label="查看当前酒馆统帅被动">
+          <img id="hudCommanderImg" src="./assets/textures/角色/role/skin_8.png" alt="">
+          <span id="hudCommanderTag">战鼓</span>
+        </button>
+
+        <div class="stat-pill hearts-pill" id="hudHearts" title="剩余不屈红心">❤️❤️❤️❤️❤️</div>
+
+        <div class="stat-pill gold-pill" title="本回合剩余金币">
+          <img src="./assets/sprites/UI_界面/ui/Common/jinbi.png" alt="" aria-hidden="true">
+          <span id="hudGold">10</span>
+        </div>
+
+        <div class="stat-pill tier-pill" id="hudRoundTier">🍺T1 · 第1轮</div>
+      </div>
+
+      <div class="hud-right">
+        <div class="crown-pill" id="hudCrowns" title="累计夺取 10 顶胜场皇冠即可通关登顶">🏆 0/10</div>
+        <button type="button" class="hud-icon-btn" id="btnCompendium" aria-label="打开全魔物与装备图鉴" title="流派图鉴">📖</button>
+        <button type="button" class="hud-icon-btn" id="btnHelp" aria-label="打开玩法规则说明" title="玩法规则">❓</button>
+        <button type="button" class="hud-icon-btn" id="btnMute" aria-label="切换音效静音" title="声音开关">🔊</button>
+      </div>
+    </header>
+
+    <!-- 2. 上半屏：5v5 排队对撞擂台（左1列为黄金前锋交锋位，2~5列依次顺位补位） -->
+    <section class="battle-arena" id="battleArena" aria-label="5v5排队对撞战场">
+      <div class="arena-bg" id="arenaBg"></div>
+
+      <!-- 敌方情报头栏 -->
+      <div class="row-header enemy-row-header">
+        <div class="castle-tag enemy-castle-tag">
+          <img src="./assets/sprites/UI_界面/ui/TavernFight/img_difang_jgzq.png" alt="" aria-hidden="true">
+          <strong id="enemyWarbandTitle">第1轮 · 荒野猪猪团</strong>
+        </div>
+        <button type="button" class="mini-log-btn" id="btnOpenLog" aria-label="查看战斗详细战报">📜 战报</button>
+      </div>
+
+      <!-- 敌方 5 槽队列（左0 = 1号前锋） -->
+      <div class="lineup-grid enemy-grid" id="enemyGrid" role="list" aria-label="敌方5槽魔物队列"></div>
+
+      <!-- 中央前锋交锋带 & 镇馆宝物栏 -->
+      <div class="clash-divider">
+        <div class="vanguard-vs-badge" id="vanguardVsBadge">
+          <img src="./assets/sprites/UI_界面/ui/TavernFight/img_duijue_jgzq.png" alt="" aria-hidden="true">
+          <span>1号前锋交锋</span>
+        </div>
+        <div class="live-ticker" id="liveTicker">排兵布阵：左侧 1 号位率先交锋，阵亡后右侧依次向前顶上！</div>
+        <div class="relics-strip" id="relicsStrip" aria-label="已持有镇馆宝物"></div>
+      </div>
+
+      <!-- 我方 5 槽队列（左0 = 1号前锋，支持点击互换/合体/投喂） -->
+      <div class="lineup-grid ally-grid" id="allyGrid" role="list" aria-label="我方5槽魔物队列"></div>
+
+      <div class="row-header ally-row-header">
+        <div class="castle-tag ally-castle-tag">
+          <img src="./assets/sprites/UI_界面/ui/TavernFight/img_wofang_jgzq.png" alt="" aria-hidden="true">
+          <span>我方战团 <small id="allyCountText">(0/5)</small></span>
+        </div>
+        <span class="queue-hint">⚔️左1前锋 ◀ 2 ◀ 3 ◀ 4 ◀ 5后卫</span>
+      </div>
+    </section>
+
+    <!-- 3. 中腰战术检视与快捷操作条 -->
+    <section class="inspector-belt" id="inspectorBelt" aria-label="魔物与道具详情检视栏">
+      <div class="inspector-main" id="inspectorMain">
+        <span class="inspector-placeholder">💡 点击下方酒馆魔物上阵（3金），同名叠加升星可爆出更高阶新宠！</span>
+      </div>
+      <div class="inspector-actions" id="inspectorActions"></div>
+    </section>
+
+    <!-- 4. 下半屏：酒馆招募与秘药装备柜台 -->
+    <section class="tavern-cabinet" id="tavernCabinet" aria-label="酒馆招募柜台">
+      <div class="cabinet-header">
+        <div class="cabinet-title-group">
+          <span class="cabinet-badge" id="cabinetTierBadge">🍺 T1 酒馆</span>
+          <span class="soup-buff-chip" id="soupBuffChip" hidden>🥫 新宠 +1/+1</span>
+        </div>
+        <div class="cabinet-price-hint">
+          <span>魔物 <strong>3金</strong></span>
+          <span>·</span>
+          <span id="foodPriceHint">秘药 <strong>3金</strong></span>
+        </div>
+      </div>
+
+      <div class="shop-shelves">
+        <div class="shop-units-row" id="shopUnitsRow" role="list" aria-label="酒馆待招募魔物"></div>
+        <div class="shop-foods-row" id="shopFoodsRow" role="list" aria-label="酒馆待购买食物与装备"></div>
+      </div>
+
+      <!-- 整备阶段操作栏 -->
+      <div class="action-bar" id="prepActionBar">
+        <button type="button" class="ctrl-btn reroll-btn" id="btnReroll">
+          <span class="btn-title">🔄 刷新酒馆</span>
+          <span class="btn-sub" id="rerollCostText">消耗 1 金</span>
+        </button>
+
+        <button type="button" class="ctrl-btn freeze-mode-btn" id="btnFreezeMode" aria-pressed="false">
+          <span class="btn-title">❄️ 冰封锁店</span>
+          <span class="btn-sub" id="freezeModeSub">点击切换锁店</span>
+        </button>
+
+        <button type="button" class="ctrl-btn fight-btn" id="btnStartBattle">
+          <span class="btn-title">⚔️ 擂鼓开战</span>
+          <span class="btn-sub" id="fightBtnSub">迎战第 1 轮</span>
+        </button>
+      </div>
+
+      <!-- 战斗回放控制栏 -->
+      <div class="action-bar battle-action-bar" id="battleActionBar" hidden>
+        <button type="button" class="ctrl-btn speed-btn" id="btnSpeed">
+          <span class="btn-title" id="speedBtnTitle">⏩ 倍速 ×1</span>
+          <span class="btn-sub">切换 ×1 / ×2 / ×3</span>
+        </button>
+
+        <button type="button" class="ctrl-btn pause-btn" id="btnPause" aria-pressed="false">
+          <span class="btn-title" id="pauseBtnTitle">⏸️ 暂停观战</span>
+          <span class="btn-sub">定格细看连锁</span>
+        </button>
+
+        <button type="button" class="ctrl-btn skip-btn" id="btnSkipBattle">
+          <span class="btn-title">⚡ 瞬时结算</span>
+          <span class="btn-sub">快进至胜负结果</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 弹窗 1：开局 4 选 1 酒馆统帅 -->
+  <dialog id="commanderDialog" class="game-dialog" closedby="none" aria-labelledby="commanderDialogTitle">
+    <div class="dialog-panel">
+      <h1 id="commanderDialogTitle" class="dialog-title">🍺 选择你的酒馆掌柜</h1>
+      <p class="dialog-subtitle">组建 5 只颜艺魔物战团，排队互拱、三合一升星，夺取 10 胜皇冠登顶！</p>
+      <div class="commander-grid" id="commanderGrid"></div>
+    </div>
+  </dialog>
+
+  <!-- 弹窗 2：酒馆升阶 · 镇馆宝物三选一 -->
+  <dialog id="relicDialog" class="game-dialog" closedby="none" aria-labelledby="relicDialogTitle">
+    <div class="dialog-panel">
+      <h1 id="relicDialogTitle" class="dialog-title">✨ 酒馆升阶 · 镇馆宝物三选一</h1>
+      <p class="dialog-subtitle" id="relicDialogSub">酒馆已解锁更高阶魔物！挑选 1 件永久生效的镇馆宝物：</p>
+      <div class="relic-choices-grid" id="relicChoicesGrid"></div>
+    </div>
+  </dialog>
+
+  <!-- 弹窗 3：全魔物与食物宝物图鉴（支持轻触背景或 Esc 关闭） -->
+  <dialog id="compendiumDialog" class="game-dialog" closedby="any" aria-labelledby="compendiumDialogTitle">
+    <div class="dialog-panel dialog-panel-wide">
+      <div class="dialog-head-row">
+        <h1 id="compendiumDialogTitle" class="dialog-title">📖 酒馆魔物与秘药全图鉴</h1>
+        <form method="dialog">
+          <button type="submit" class="dialog-close-btn" aria-label="关闭图鉴" autofocus>✕</button>
+        </form>
+      </div>
+      <div class="compendium-tabs" id="compendiumTabs">
+        <button type="button" class="tab-chip is-active" data-tab="units">🐾 魔物图鉴 (22)</button>
+        <button type="button" class="tab-chip" data-tab="foods">🍖 秘药装备 (11)</button>
+        <button type="button" class="tab-chip" data-tab="relics">🏆 镇馆宝物 (8)</button>
+      </div>
+      <div class="compendium-body" id="compendiumBody"></div>
+    </div>
+  </dialog>
+
+  <!-- 弹窗 4：玩法规则说明 -->
+  <dialog id="helpDialog" class="game-dialog" closedby="any" aria-labelledby="helpDialogTitle">
+    <div class="dialog-panel">
+      <div class="dialog-head-row">
+        <h1 id="helpDialogTitle" class="dialog-title">❓ 猛宠斗阵 · 玩法速成指南</h1>
+        <form method="dialog">
+          <button type="submit" class="dialog-close-btn" aria-label="关闭规则说明" autofocus>✕</button>
+        </form>
+      </div>
+      <ul class="help-list">
+        <li><strong>⚔️ 排队对撞规则</strong>：敌我双方【最左侧 1 号位】为前锋，开战后直接迎头互撞；前锋阵亡后，右侧 2~5 号位依次向左顺位顶上！</li>
+        <li><strong>😂 挨揍颜艺连锁</strong>：每次受击都会触发魔物专属 `_st` 挨揍颜艺表情，并引爆【酸液飞溅 / 委屈鼓劲 / 木刺反甲 / 碎岩狙后 / 亡语召唤】等连锁反应！</li>
+        <li><strong>⭐ 三合一升星爆高阶宠</strong>：将同名酒馆魔物叠到已有友军身上（★1 叠 2 次升 ★2，★2 叠 3 次升 ★3），升星瞬间不仅技能翻倍，还会立即在酒馆额外爆出 1 只<strong>高一阶新宠</strong>！</li>
+        <li><strong>🍖 秘药与穿戴装备</strong>：投喂鸡腿/脑花可永久涨身材或经验；荆棘盾、蜜罐、圣光金盾、1UP 复活章可穿戴在魔物身上生效！</li>
+        <li><strong>❄️ 冰封锁店与经济</strong>：每回合金币自动补满至 10 金（不结转），遇到心仪同款魔物或神器可开启【冰封锁店】留到下回合买！夺满 <strong>10 胜皇冠</strong> 即通关！</li>
+      </ul>
+      <form method="dialog" class="dialog-foot">
+        <button type="submit" class="primary-modal-btn">明白，回酒馆布阵！</button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- 弹窗 5：本场详细战斗战报 -->
+  <dialog id="logDialog" class="game-dialog" closedby="any" aria-labelledby="logDialogTitle">
+    <div class="dialog-panel">
+      <div class="dialog-head-row">
+        <h1 id="logDialogTitle" class="dialog-title">📜 战斗连锁战报</h1>
+        <form method="dialog">
+          <button type="submit" class="dialog-close-btn" aria-label="关闭战报" autofocus>✕</button>
+        </form>
+      </div>
+      <ol class="battle-log-list" id="battleLogList"></ol>
+    </div>
+  </dialog>
+
+  <!-- 弹窗 6：通关登顶 / 惜败结算面板 -->
+  <dialog id="resultDialog" class="game-dialog" closedby="none" aria-labelledby="resultDialogTitle">
+    <div class="dialog-panel result-panel">
+      <h1 id="resultDialogTitle" class="dialog-title">🏆 酒馆霸主 · 十胜登顶！</h1>
+      <p class="dialog-subtitle" id="resultDialogSub"></p>
+      <div class="final-team-showcase" id="finalTeamShowcase"></div>
+      <div class="result-actions">
+        <button type="button" class="primary-modal-btn" id="btnRestartRun" autofocus>🍺 重新选将再来一局</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

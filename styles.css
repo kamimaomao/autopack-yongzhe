@@ -1,0 +1,1365 @@
+@font-face {
+  font-family: "YongzheFont";
+  src: url("./assets/fonts/fz.ttf") format("truetype");
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --target-size: 24px;
+  --font-display: "YongzheFont", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  --bg-void: #080b14;
+  --bg-shell: #111625;
+  --bg-hud: #161d31;
+  --bg-inspector: #182138;
+  --bg-tavern: #251916;
+  --bg-shelf: #191213;
+  --bg-card: #1d263d;
+  --bg-card-ally: #1d2d44;
+  --bg-card-enemy: #341d29;
+
+  --gold: #ffd45c;
+  --gold-deep: #c99228;
+  --green: #46dc78;
+  --red: #f25560;
+  --cyan: #57cbff;
+  --ice: #7ae2ff;
+  --purple: #c574ff;
+  --text-main: #f5f8ff;
+  --text-sub: #b6c4e2;
+  --border-muted: #354569;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --target-size: 44px;
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100dvh;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at 50% 15%, #222b49 0%, var(--bg-void) 74%);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  overflow-wrap: break-word;
+  user-select: none;
+}
+
+img, video {
+  max-inline-size: 100%;
+  block-size: auto;
+  -webkit-user-drag: none;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.4px;
+  text-wrap: balance;
+}
+
+p, li {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+:where(button, [role="button"]) {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  min-block-size: var(--target-size);
+  min-inline-size: var(--target-size);
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+/* ================= 9:16 竖屏应用主壳 ================= */
+.app-shell {
+  position: relative;
+  inline-size: min(100vw, 58dvh, 480px);
+  min-block-size: 100dvh;
+  max-block-size: 940px;
+  display: grid;
+  grid-template-rows: auto minmax(265px, 1.08fr) auto minmax(238px, 0.92fr);
+  background: var(--bg-shell);
+  border-inline: 2px solid #2b3756;
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.8);
+  padding-top: max(4px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  isolation: isolate;
+}
+
+@media (max-width: 520px) {
+  .app-shell {
+    inline-size: 100vw;
+    max-block-size: none;
+    border-inline: none;
+  }
+}
+
+/* 顶部轻提示条 */
+.toast-banner {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 45;
+  background: rgba(16, 22, 38, 0.95);
+  border: 1.5px solid var(--gold);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--gold);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  max-inline-size: 92%;
+  text-align: center;
+}
+
+.toast-banner.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ================= 1. 顶部 HUD ================= */
+.top-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 5px 7px;
+  background: linear-gradient(180deg, #1d2742 0%, var(--bg-hud) 100%);
+  border-bottom: 1.5px solid #2d3c60;
+}
+
+.hud-left,
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.commander-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px 2px 2px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gold-deep);
+  background: #232d49;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.commander-pill img {
+  inline-size: 22px;
+  block-size: 22px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #111626;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(10, 14, 24, 0.72);
+  border: 1px solid #334368;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hearts-pill {
+  font-size: 10px;
+  letter-spacing: -1.5px;
+}
+
+.gold-pill {
+  color: var(--gold);
+  border-color: rgba(255, 212, 92, 0.45);
+}
+
+.gold-pill img {
+  inline-size: 14px;
+  block-size: 14px;
+}
+
+.tier-pill {
+  color: var(--cyan);
+  font-size: 10.5px;
+}
+
+.crown-pill {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4b3310, #291c09);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 11.5px;
+}
+
+.hud-icon-btn {
+  position: relative;
+  inline-size: 27px;
+  block-size: 27px;
+  padding: 0;
+  border-radius: 7px;
+  border: 1px solid #3b4d77;
+  background: #202a45;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.hud-icon-btn:hover {
+  border-color: var(--gold);
+}
+
+/* ================= 2. 上半屏 5v5 排队擂台 ================= */
+.battle-arena {
+  position: relative;
+  container: arena / inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 8px;
+  gap: 5px;
+  isolation: isolate;
+}
+
+.arena-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("./assets/textures/背景_大图/bigimg/img_jgbj_jgzq.jpg");
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.56) saturate(1.12);
+}
+
+.arena-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 18, 32, 0.78) 0%,
+    rgba(14, 18, 32, 0.25) 48%,
+    rgba(12, 16, 28, 0.82) 100%
+  );
+}
+
+.row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.castle-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 5px;
+  border-radius: 999px;
+  background: rgba(11, 15, 26, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-weight: 700;
+}
+
+.castle-tag img {
+  inline-size: 20px;
+  block-size: 20px;
+  object-fit: contain;
+}
+
+.enemy-castle-tag {
+  color: #ff9ca4;
+  border-color: rgba(242, 85, 96, 0.45);
+}
+
+.ally-castle-tag {
+  color: #8ee5ff;
+  border-color: rgba(87, 203, 255, 0.45);
+}
+
+.mini-log-btn {
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid #4c5f8f;
+  background: rgba(20, 28, 48, 0.86);
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.queue-hint {
+  font-size: 10.5px;
+  color: #ffd97d;
+  background: rgba(12, 16, 28, 0.72);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* 5 槽魔物阵列网格 */
+.lineup-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  align-items: stretch;
+}
+
+.unit-slot {
+  position: relative;
+  min-block-size: 94px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(164, 185, 228, 0.32);
+  background: rgba(13, 18, 32, 0.56);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 3px 3px;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+/* 左 1 列：黄金前锋交锋位 */
+.unit-slot.is-vanguard {
+  border-style: solid;
+  border-color: rgba(255, 212, 92, 0.72);
+  background: linear-gradient(180deg, rgba(68, 49, 16, 0.58), rgba(20, 24, 38, 0.78));
+  box-shadow: inset 0 0 12px rgba(255, 204, 72, 0.22);
+}
+
+.slot-index-watermark {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: rgba(205, 220, 250, 0.45);
+  pointer-events: none;
+}
+
+.unit-slot.is-vanguard .slot-index-watermark {
+  color: var(--gold);
+}
+
+.unit-slot.has-unit .slot-index-watermark {
+  display: none;
+}
+
+.slot-empty-hint {
+  margin: auto 0;
+  font-size: 10.5px;
+  color: rgba(190, 206, 238, 0.48);
+  text-align: center;
+}
+
+/* 有魔物的实心卡面 */
+.unit-slot.has-unit {
+  border-style: solid;
+  border-color: #465b8a;
+  background: linear-gradient(180deg, rgba(35, 49, 78, 0.92) 0%, rgba(18, 25, 42, 0.95) 100%);
+}
+
+.enemy-grid .unit-slot.has-unit {
+  border-color: #743a49;
+  background: linear-gradient(180deg, rgba(64, 30, 42, 0.92) 0%, rgba(28, 15, 22, 0.95) 100%);
+}
+
+.unit-slot.is-selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(255, 212, 92, 0.55), 0 6px 16px rgba(0, 0, 0, 0.5);
+  transform: translateY(-3px);
+}
+
+.unit-slot.can-place {
+  border-style: solid;
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(87, 203, 255, 0.45);
+}
+
+.unit-slot.can-merge-target {
+  border-style: solid;
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(70, 220, 120, 0.65);
+  animation: pulseTarget 0.95s ease-in-out infinite alternate;
+}
+
+@keyframes pulseTarget {
+  from { transform: scale(1); }
+  to { transform: scale(1.035); }
+}
+
+.unit-top-meta {
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 2px;
+  z-index: 2;
+}
+
+.star-pill {
+  font-family: var(--font-display);
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 5px;
+  background: rgba(10, 13, 22, 0.82);
+  color: var(--gold);
+  border: 1px solid rgba(255, 212, 92, 0.4);
+}
+
+.star-pill.lv-2 {
+  color: #7be8ff;
+  border-color: #57cbff;
+}
+
+.star-pill.lv-3 {
+  color: #ff9cf9;
+  border-color: #f472ff;
+  background: linear-gradient(90deg, #3b1749, #1f2b52);
+}
+
+.perk-badge {
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 50%;
+  background: rgba(12, 16, 26, 0.9);
+  border: 1px solid var(--gold);
+  padding: 1px;
+  object-fit: contain;
+}
+
+.unit-portrait-wrap {
+  position: relative;
+  inline-size: 52px;
+  block-size: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-block: 1px;
+}
+
+.unit-portrait {
+  max-inline-size: 50px;
+  max-block-size: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.65));
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+/* 挨揍颜艺高亮抖动 */
+.unit-slot.is-hit .unit-portrait {
+  filter: brightness(1.32) drop-shadow(0 0 8px rgba(255, 92, 92, 0.95));
+  animation: hitShake 0.32s ease;
+}
+
+@keyframes hitShake {
+  0% { transform: translate(0, 0) scale(1.08); }
+  25% { transform: translate(-5px, 2px) rotate(-6deg) scale(1.12); }
+  55% { transform: translate(5px, -2px) rotate(6deg) scale(1.1); }
+  80% { transform: translate(-3px, 1px) scale(1.04); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* 前锋上下迎头猛扑动画 */
+.ally-grid .unit-slot.is-clash-lunge {
+  z-index: 15;
+  animation: allyHeadbutt 0.34s cubic-bezier(0.22, 0.85, 0.36, 1);
+}
+
+.enemy-grid .unit-slot.is-clash-lunge {
+  z-index: 15;
+  animation: enemyHeadbutt 0.34s cubic-bezier(0.22, 0.85, 0.36, 1);
+}
+
+@keyframes allyHeadbutt {
+  0% { transform: translateY(6px) scale(0.95); }
+  45% { transform: translateY(-28px) scale(1.15); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes enemyHeadbutt {
+  0% { transform: translateY(-6px) scale(0.95); }
+  45% { transform: translateY(28px) scale(1.15); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.unit-slot.is-buff-pop {
+  animation: buffPop 0.34s ease;
+}
+
+@keyframes buffPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); box-shadow: 0 0 16px rgba(70, 220, 120, 0.8); }
+  100% { transform: scale(1); }
+}
+
+.unit-name-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #dce6ff;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.unit-stats-row {
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.stat-chip {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 5px;
+  padding: 1px 2px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.15;
+}
+
+.stat-chip img {
+  inline-size: 11px;
+  block-size: 11px;
+  object-fit: contain;
+}
+
+.atk-chip {
+  background: rgba(58, 37, 14, 0.92);
+  border: 1px solid rgba(255, 190, 76, 0.55);
+  color: #ffd978;
+}
+
+.hp-chip {
+  background: rgba(64, 18, 26, 0.92);
+  border: 1px solid rgba(245, 95, 108, 0.55);
+  color: #ff98a2;
+}
+
+@container arena (inline-size < 360px) {
+  .unit-portrait-wrap {
+    inline-size: 42px;
+    block-size: 42px;
+  }
+  .unit-name-label {
+    font-size: 8.5px;
+  }
+}
+
+/* 中央交锋分割带 */
+.clash-divider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 8px;
+  background: rgba(9, 13, 24, 0.82);
+  border: 1px solid rgba(255, 212, 92, 0.28);
+}
+
+.vanguard-vs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #573812, #2b1a09);
+  border: 1px solid var(--gold);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.vanguard-vs-badge img {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.live-ticker {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: 11px;
+  color: #e4ecff;
+  line-height: 1.25;
+}
+
+.relics-strip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.relic-mini-btn {
+  inline-size: 24px;
+  block-size: 24px;
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--gold);
+  background: #1b243b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relic-mini-btn img {
+  inline-size: 18px;
+  block-size: 18px;
+  object-fit: contain;
+}
+
+/* 飞弹层与位图跳字层 */
+.fx-proj-layer,
+.fx-hud-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+
+.fx-flying-bullet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(255, 220, 120, 0.85));
+}
+
+.fx-hud-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.fx-hud-boom {
+  inline-size: 46px;
+  margin-bottom: -8px;
+}
+
+.fx-hud-digits {
+  display: flex;
+  align-items: center;
+}
+
+.fx-digit-img {
+  block-size: 21px;
+  inline-size: auto;
+  margin-inline: -1px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.85));
+}
+
+.fx-hud-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(15, 22, 38, 0.9);
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+}
+
+/* ================= 3. 中腰战术检视栏 ================= */
+.inspector-belt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 9px;
+  min-block-size: 48px;
+  background: var(--bg-inspector);
+  border-block: 1.5px solid #2e3f66;
+}
+
+.inspector-main {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.inspector-placeholder {
+  color: var(--text-sub);
+}
+
+.insp-icon {
+  inline-size: 34px;
+  block-size: 34px;
+  object-fit: contain;
+  border-radius: 7px;
+  background: #101626;
+  border: 1px solid #3c4f7c;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.insp-text-wrap {
+  min-inline-size: 0;
+}
+
+.insp-title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.insp-tag {
+  font-size: 10px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #273659;
+  color: var(--cyan);
+}
+
+.insp-desc {
+  color: #dce6ff;
+  font-size: 11px;
+}
+
+.inspector-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.insp-btn {
+  padding: 4px 9px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid #4d6294;
+  background: #243252;
+}
+
+.insp-btn.sell-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, #543a12, #33220a);
+  color: var(--gold);
+}
+
+.insp-btn.use-btn {
+  border-color: var(--green);
+  background: linear-gradient(180deg, #1b5231, #10331e);
+  color: #9effbe;
+}
+
+.insp-btn.freeze-btn {
+  border-color: var(--ice);
+  background: #16334a;
+  color: var(--ice);
+}
+
+/* ================= 4. 下半屏 酒馆招募柜台 ================= */
+.tavern-cabinet {
+  container: shop / inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 8px 7px;
+  gap: 6px;
+  background: linear-gradient(180deg, var(--bg-tavern) 0%, #161012 100%);
+}
+
+.cabinet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.cabinet-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cabinet-badge {
+  font-family: var(--font-display);
+  color: var(--gold);
+  background: rgba(0, 0, 0, 0.42);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 212, 92, 0.4);
+}
+
+.soup-buff-chip {
+  font-size: 10.5px;
+  color: #9effbe;
+  background: rgba(24, 72, 42, 0.72);
+  border: 1px solid rgba(70, 220, 120, 0.5);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.cabinet-price-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #d8c6b8;
+  font-size: 11px;
+}
+
+.cabinet-price-hint strong {
+  color: var(--gold);
+}
+
+/* 魔物排 + 食物排同屏陈列 */
+.shop-shelves {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: stretch;
+  background: var(--bg-shelf);
+  border: 1px solid #49332b;
+  border-radius: 11px;
+  padding: 6px;
+}
+
+.shop-units-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.shop-unit-card {
+  flex: 1 1 54px;
+  max-inline-size: 76px;
+}
+
+.shop-empty-note {
+  flex: 1;
+  min-block-size: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  border-radius: 9px;
+  border: 1px dashed rgba(255, 212, 92, 0.25);
+  color: rgba(216, 198, 184, 0.65);
+  font-size: 11px;
+}
+
+.shop-foods-row {
+  display: flex;
+  gap: 5px;
+  padding-left: 6px;
+  border-left: 1px dashed rgba(255, 212, 92, 0.28);
+}
+
+.shop-card {
+  position: relative;
+  min-block-size: 92px;
+  border-radius: 9px;
+  border: 1.5px solid #534039;
+  background: linear-gradient(180deg, #2d2220 0%, #1c1516 100%);
+  padding: 4px 3px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.shop-food-card {
+  inline-size: 62px;
+  background: linear-gradient(180deg, #222a3a 0%, #151a26 100%);
+  border-color: #3f5277;
+}
+
+@container shop (inline-size < 375px) {
+  .shop-shelves {
+    grid-template-columns: 1fr;
+  }
+  .shop-foods-row {
+    padding-left: 0;
+    padding-top: 5px;
+    border-left: none;
+    border-top: 1px dashed rgba(255, 212, 92, 0.25);
+    justify-content: flex-start;
+  }
+  .shop-food-card {
+    flex: 1;
+    inline-size: auto;
+    min-block-size: 70px;
+  }
+}
+
+.shop-card:hover {
+  border-color: var(--gold);
+}
+
+.shop-card.is-selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(255, 212, 92, 0.55);
+  transform: translateY(-3px);
+}
+
+.shop-card.is-frozen {
+  border-color: var(--ice);
+  background: linear-gradient(180deg, #1b3b52 0%, #112233 100%);
+  box-shadow: inset 0 0 12px rgba(122, 226, 255, 0.35);
+}
+
+.shop-card.is-bonus {
+  border-color: #df7aff;
+}
+
+.shop-card-top {
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9.5px;
+}
+
+.tier-tag {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffd980;
+  font-weight: 700;
+}
+
+.merge-hint-tag {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #175c32;
+  color: #9effbe;
+  font-weight: 800;
+}
+
+.freeze-lock-icon {
+  inline-size: 14px;
+  block-size: 14px;
+}
+
+.shop-art {
+  max-inline-size: 44px;
+  max-block-size: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.6));
+}
+
+.shop-food-card .shop-art {
+  max-inline-size: 36px;
+  max-block-size: 36px;
+}
+
+.shop-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #f4ebe4;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.shop-effect-sub {
+  font-size: 9px;
+  color: var(--cyan);
+  text-align: center;
+}
+
+/* 底部控制栏按钮 */
+.action-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr;
+  gap: 6px;
+}
+
+.ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 6px;
+  border-radius: 10px;
+  border: 1.5px solid #59463d;
+  background: linear-gradient(180deg, #352926, #221a18);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+}
+
+.btn-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.btn-sub {
+  font-size: 10px;
+  color: #cbb8ad;
+}
+
+.reroll-btn {
+  border-color: #5b78ad;
+  background: linear-gradient(180deg, #263859, #182338);
+}
+
+.freeze-mode-btn[aria-pressed="true"] {
+  border-color: var(--ice);
+  background: linear-gradient(180deg, #1b4b6b, #112e45);
+  box-shadow: 0 0 12px rgba(122, 226, 255, 0.45);
+}
+
+.fight-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, #c93b2b 0%, #871d18 100%);
+}
+
+.fight-btn .btn-title {
+  color: #fff6d6;
+  font-size: 14px;
+}
+
+.fight-btn .btn-sub {
+  color: #ffd9b8;
+}
+
+.speed-btn,
+.pause-btn {
+  border-color: #4f6ca3;
+  background: linear-gradient(180deg, #253659, #172238);
+}
+
+.skip-btn {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, #7c5215, #4d310b);
+}
+
+/* ================= 原生 <dialog> 顶层模态框规范 ================= */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgba(5, 8, 16, 0.76);
+  backdrop-filter: blur(4px);
+}
+
+.game-dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: var(--text-main);
+  inline-size: min(94vw, 450px);
+  max-block-size: 88dvh;
+}
+
+.game-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-panel {
+  background: linear-gradient(180deg, #1c253d 0%, #121829 100%);
+  border: 2px solid var(--gold-deep);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dialog-title {
+  font-size: 18px;
+  color: var(--gold);
+}
+
+.dialog-subtitle {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  line-height: 1.45;
+}
+
+.dialog-close-btn {
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 8px;
+  border: 1px solid #485c8a;
+  background: #23304f;
+  font-weight: 800;
+}
+
+/* 统帅 4 选 1 卡片网格 */
+.commander-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+@media (max-width: 360px) {
+  .commander-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.commander-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1.5px solid #3f527d;
+  background: #172036;
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.commander-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.commander-card img {
+  inline-size: 62px;
+  block-size: 62px;
+  object-fit: contain;
+}
+
+.commander-card strong {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.commander-role-chip {
+  font-size: 10.5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cyan);
+}
+
+.commander-card p {
+  font-size: 11px;
+  color: #d6e1fa;
+  line-height: 1.35;
+}
+
+/* 镇馆宝物三选一 */
+.relic-choices-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relic-choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 10px;
+  border-radius: 11px;
+  border: 1.5px solid #495e8f;
+  background: #19243d;
+}
+
+.relic-choice-btn:hover {
+  border-color: var(--gold);
+  background: #213052;
+}
+
+.relic-choice-btn img {
+  inline-size: 44px;
+  block-size: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.relic-choice-btn strong {
+  display: block;
+  color: var(--gold);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.relic-choice-btn span {
+  font-size: 12px;
+  color: #dce6ff;
+}
+
+/* 图鉴与战报 */
+.compendium-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tab-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #415582;
+  background: #19233a;
+  font-size: 12px;
+}
+
+.tab-chip.is-active {
+  border-color: var(--gold);
+  background: #3d2c12;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.compendium-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-block-size: 56dvh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.comp-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: rgba(12, 17, 30, 0.72);
+  border: 1px solid #2e3e63;
+}
+
+.comp-item img {
+  inline-size: 40px;
+  block-size: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.comp-item-info {
+  min-inline-size: 0;
+  font-size: 11.5px;
+}
+
+.comp-item-info strong {
+  color: var(--gold);
+}
+
+.help-list,
+.battle-log-list {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #dce6ff;
+  max-block-size: 56dvh;
+  overflow-y: auto;
+}
+
+.dialog-foot,
+.result-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.primary-modal-btn {
+  inline-size: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gold);
+  background: linear-gradient(180deg, #c93b2b, #851d18);
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: #fff6d6;
+}
+
+.final-team-showcase {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(9, 13, 24, 0.7);
+}
+
+.final-mini-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.final-mini-unit img {
+  inline-size: 42px;
+  block-size: 42px;
+  object-fit: contain;
+}
